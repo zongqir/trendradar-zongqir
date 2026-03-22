@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
           clean: true
@@ -131,6 +131,27 @@ jobs:
             echo "Error: Config missing"
             exit 1
           fi
+
+      - name: Prepare runtime secrets
+        if: success()
+        run: |
+          {
+            echo "FEISHU_WEBHOOK_URL<<EOF"
+            echo "${{ secrets.FEISHU_WEBHOOK_URL }}"
+            echo "EOF"
+            echo "AI_API_KEY<<EOF"
+            echo "${{ secrets.AI_API_KEY }}"
+            echo "EOF"
+            echo "AI_MODEL<<EOF"
+            echo "${{ secrets.AI_MODEL }}"
+            echo "EOF"
+            echo "AI_API_BASE<<EOF"
+            echo "${{ secrets.AI_API_BASE }}"
+            echo "EOF"
+            echo "AI_ANALYSIS_ENABLED<<EOF"
+            echo "${{ secrets.AI_ANALYSIS_ENABLED }}"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
 
       - name: Run crawler
         if: success()
