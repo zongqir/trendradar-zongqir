@@ -8,6 +8,21 @@
 import re
 
 
+def sanitize_feishu_card_markdown(text: str) -> str:
+    """清理飞书卡片 markdown 不支持的标记，保留链接和基础 markdown"""
+    # 去除 HTML 标签 <font color='xxx'>text</font> -> text
+    text = re.sub(r"<font[^>]*>(.+?)</font>", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+
+    # 清理每一行首尾多余空白，保留换行结构
+    text = "\n".join(line.strip() for line in text.splitlines())
+
+    # 清理多余空行，避免卡片中出现大段留白
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    return text.strip()
+
+
 def strip_markdown(text: str) -> str:
     """去除文本中的 markdown 语法格式，用于个人微信推送
 

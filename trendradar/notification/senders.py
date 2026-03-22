@@ -30,7 +30,11 @@ from urllib.parse import urlparse
 import requests
 
 from .batch import add_batch_headers, get_max_batch_header_size
-from .formatters import convert_markdown_to_mrkdwn, strip_markdown
+from .formatters import (
+    convert_markdown_to_mrkdwn,
+    sanitize_feishu_card_markdown,
+    strip_markdown,
+)
 
 
 def _render_ai_analysis(ai_analysis: Any, channel: str) -> str:
@@ -161,18 +165,33 @@ def send_to_feishu(
 
     # 逐批发送
     for i, batch_content in enumerate(batches, 1):
-        plain_content = strip_markdown(batch_content)
-        content_size = len(plain_content.encode("utf-8"))
+        card_content = sanitize_feishu_card_markdown(batch_content)
+        content_size = len(card_content.encode("utf-8"))
         print(
             f"发送{log_prefix}第 {i}/{len(batches)} 批次，大小：{content_size} 字节 [{report_type}]"
         )
 
-        # 自定义机器人 webhook 支持 text/post/share_chat/image 等消息类型。
-        # 这里发送纯文本，避免把 interactive(card) 类型和 text 内容混用。
+        batch_suffix = f" ({i}/{len(batches)})" if len(batches) > 1 else ""
         payload = {
-            "msg_type": "text",
-            "content": {
-                "text": plain_content,
+            "msg_type": "interactive",
+            "card": {
+                "config": {
+                    "wide_screen_mode": True,
+                    "enable_forward": True,
+                },
+                "header": {
+                    "title": {
+                        "tag": "plain_text",
+                        "content": f"TrendRadar · {report_type}{batch_suffix}",
+                    },
+                    "template": "blue",
+                },
+                "elements": [
+                    {
+                        "tag": "markdown",
+                        "content": card_content,
+                    }
+                ],
             },
         }
 
