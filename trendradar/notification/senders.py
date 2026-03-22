@@ -161,7 +161,8 @@ def send_to_feishu(
 
     # 逐批发送
     for i, batch_content in enumerate(batches, 1):
-        content_size = len(batch_content.encode("utf-8"))
+        plain_content = strip_markdown(batch_content)
+        content_size = len(plain_content.encode("utf-8"))
         print(
             f"发送{log_prefix}第 {i}/{len(batches)} 批次，大小：{content_size} 字节 [{report_type}]"
         )
@@ -171,7 +172,7 @@ def send_to_feishu(
         payload = {
             "msg_type": "text",
             "content": {
-                "text": batch_content,
+                "text": plain_content,
             },
         }
 

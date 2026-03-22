@@ -59,6 +59,12 @@ def strip_markdown(text: str) -> str:
     text = re.sub(r'<font[^>]*>(.+?)</font>', r'\1', text)
     text = re.sub(r'<[^>]+>', '', text)
 
+    # 统一纯文本中的装饰性分隔线，避免在不支持富文本的平台出现噪音
+    text = re.sub(r'^[\s]*[━─—=\-]{3,}[\s]*$', '----------------', text, flags=re.MULTILINE)
+
+    # 清理每一行首尾多余空白，保留换行结构
+    text = "\n".join(line.strip() for line in text.splitlines())
+
     # 清理多余的空行（保留最多两个连续空行）
     text = re.sub(r'\n{3,}', '\n\n', text)
 
