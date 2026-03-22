@@ -419,7 +419,7 @@ custom:
                                    #   incremental → 只推送新增内容
 
                                    
-    # frequency_file: "general.txt"
+    frequency_file: "zongqir-ai-tech.txt"
                                    # 关键词文件（可选，位于 config/custom/keyword/）
                                    # 不填则使用默认的 config/frequency_words.txt
                                    # 时间段（period）中也可以设置此字段来覆盖默认值
@@ -467,7 +467,7 @@ custom:
       # interests_file: "xxx.txt"                # AI 兴趣文件（可选，位于 config/custom/ai/）
       # filter_method: "keyword"                # 筛选策略（可选: keyword | ai，不填用全局 filter.method）
       collect: true                # 夜间继续采集数据
-      analyze: true                # 夜间可以跑 AI 分析（反正不推送）
+      analyze: false               # 夜间不跑 AI 分析
       push: false                  # 深夜不推送，避免打扰
 
     weekday_morning:
@@ -499,8 +499,8 @@ custom:
       # frequency_file: "xxx.txt"               # 关键词文件（可选，位于 config/custom/keyword/）
       # interests_file: "xxx.txt"                # AI 兴趣文件（可选，位于 config/custom/ai/）
       # filter_method: "keyword"                # 筛选策略（可选: keyword | ai，不填用全局 filter.method）
-      analyze: true                # 晚间做 AI 分析
-      ai_mode: "daily"             # AI 也分析全天内容
+      analyze: false               # 晚间不跑 AI 分析
+      ai_mode: "daily"             # 若后续启用 AI，可直接分析全天内容
       push: true                   # 晚间推送
       report_mode: "daily"         # 当日全部新闻汇总
       # once 继承 default（analyze: true, push: true）→ 只分析/推送一次

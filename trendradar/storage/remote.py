@@ -92,15 +92,19 @@ class RemoteStorageBackend(SQLiteStorageMixin, StorageBackend):
         self.temp_dir.mkdir(parents=True, exist_ok=True)
 
         # 初始化 S3 客户端
-        # 使用 virtual-hosted style addressing（主流）
+        # 默认使用 virtual-hosted style addressing。
+        # Cloudflare R2 在部分 S3 客户端组合下对 path-style 更稳妥，
+        # 否则可能出现 list 正常但 put/get 报 NoSuchBucket 的情况。
+        #
         # 根据服务商选择签名版本：
         # - 腾讯云 COS 和 阿里云 OSS 使用 SigV2 以避免 chunked encoding 问题
         # - 其他服务商（AWS S3、Cloudflare R2、MinIO 等）默认使用 SigV4
         use_sigv2 = "myqcloud.com" in endpoint_url.lower() or "aliyuncs.com" in endpoint_url.lower()
         signature_version = 's3' if use_sigv2 else 's3v4'
+        addressing_style = "path" if "cloudflarestorage.com" in endpoint_url.lower() else "virtual"
 
         s3_config = BotoConfig(
-            s3={"addressing_style": "virtual"},
+            s3={"addressing_style": addressing_style},
             signature_version=signature_version,
         )
 
@@ -123,7 +127,10 @@ class RemoteStorageBackend(SQLiteStorageMixin, StorageBackend):
         self._batch_mode = False
         self._batch_dirty: set = set()  # 待上传的 (date, db_type) 集合
 
-        print(f"[远程存储] 初始化完成，存储桶: {bucket_name}，签名版本: {signature_version}")
+        print(
+            f"[远程存储] 初始化完成，存储桶: {bucket_name}，"
+            f"签名版本: {signature_version}，寻址方式: {addressing_style}"
+        )
 
     @property
     def backend_name(self) -> str:

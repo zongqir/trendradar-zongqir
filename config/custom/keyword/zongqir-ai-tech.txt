@@ -1,0 +1,39 @@
+[GLOBAL_FILTER]
+震惊
+突发
+直播带货
+明星
+饭圈
+
+[WORD_GROUPS]
+
+[AI 模型与产品]
+/OpenAI|ChatGPT|Sora|DALL-E|Sam Altman|GPT-5|Codex/ => OpenAI
+/Anthropic|Claude|Dario Amodei/ => Claude
+/Gemini|DeepMind|Google AI/ => Gemini
+/DeepSeek|深度求索|梁文锋/ => DeepSeek
+/Qwen|通义千问|阿里云百炼/ => Qwen
+/MiniMax|海螺|GLM|智谱/ => 国产模型
+
+[AI Coding 与 Agent]
+/Cursor|Windsurf|Copilot|Trae|Lovable|Bolt|v0|Replit|agent|MCP/ => AI Coding
+
+[中国科技公司]
+/华为|任正非|余承东|鸿蒙|昇腾|海思/ => 华为
+/腾讯|马化腾|微信|QQ|元宝/ => 腾讯
+/字节|张一鸣|抖音|豆包|即梦/ => 字节
+/京东|刘强东/ => 京东
+/小米|雷军/ => 小米
+
+[算力与芯片]
+/英伟达|黄仁勋|NVIDIA|CUDA|H100|B200|GB200/ => 英伟达
+/AMD|苏姿丰|Ryzen|EPYC|MI300/ => AMD
+/芯片|半导体|先进封装|光刻机|晶圆|EDA/ => 半导体
+/算力|数据中心|云计算|GPU|推理成本/ => 算力与云
+
+[机器人与汽车]
+/宇树|Unitree|智元|众擎|人形机器人|具身智能/ => 机器人
+/特斯拉|马斯克|FSD|Robotaxi|比亚迪|王传福|智驾|自动驾驶/ => 智能汽车
+
+[政策与市场]
+/关税|制裁|中美|欧盟|美联储|降息|通胀|人民币|纳指|美股/ => 宏观政策
