@@ -57,6 +57,28 @@ def _build_feishu_card_elements(content: str) -> list[dict]:
     if not sanitized:
         return [{"tag": "markdown", "content": "暂无内容"}]
 
+    def _markdown(content: str) -> dict:
+        return {"tag": "markdown", "content": content.strip()}
+
+    def _append_hr(elements: list[dict]) -> None:
+        if elements and elements[-1].get("tag") != "hr":
+            elements.append({"tag": "hr"})
+
+    def _format_summary_block(section: str) -> str:
+        lines = [line.strip() for line in section.splitlines() if line.strip()]
+        formatted_lines = ["**概览**"]
+        for line in lines:
+            match = re.match(r"^\*\*(.+?)：\*\*\s*(.+)$", line)
+            if match:
+                formatted_lines.append(f"- **{match.group(1)}：** {match.group(2)}")
+            else:
+                formatted_lines.append(f"- {line}")
+        return "\n".join(formatted_lines)
+
+    def _format_footer_block(lines: list[str]) -> str:
+        quoted = [f"> {line}" for line in lines if line.strip()]
+        return "\n".join(quoted)
+
     def _split_category_blocks(section: str) -> list[str]:
         lines = section.splitlines()
         category_indices = [
@@ -97,12 +119,30 @@ def _build_feishu_card_elements(content: str) -> list[dict]:
         sections = [section for section in sections if section]
 
     elements: list[dict] = []
-    for section in sections:
-        for block in _split_category_blocks(section):
-            elements.append({"tag": "markdown", "content": block})
+    if sections and "总新闻数" in sections[0] and "时间" in sections[0]:
+        elements.append(_markdown(_format_summary_block(sections[0])))
+        _append_hr(elements)
+        sections = sections[1:]
+
+    for section_idx, section in enumerate(sections):
+        blocks = _split_category_blocks(section)
+        if blocks and not blocks[0].lstrip().startswith("["):
+            elements.append(_markdown(blocks[0]))
+            blocks = blocks[1:]
+            if blocks:
+                _append_hr(elements)
+
+        for block_idx, block in enumerate(blocks):
+            elements.append(_markdown(block))
+            if block_idx < len(blocks) - 1:
+                _append_hr(elements)
+
+        if section_idx < len(sections) - 1:
+            _append_hr(elements)
 
     if footer_lines:
-        elements.append({"tag": "markdown", "content": "\n".join(footer_lines)})
+        _append_hr(elements)
+        elements.append(_markdown(_format_footer_block(footer_lines)))
 
     return elements or [{"tag": "markdown", "content": sanitized}]
 
