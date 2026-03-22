@@ -469,6 +469,9 @@ custom:
       collect: true                # 夜间继续采集数据
       analyze: false               # 夜间不跑 AI 分析
       push: true                   # 深夜也推送
+      once:
+        analyze: true
+        push: false                # 深夜时段允许重复推送，便于立即验证效果
 
     weekday_morning:
       name: "工作日早间"
