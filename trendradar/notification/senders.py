@@ -18,6 +18,7 @@
 import smtplib
 import time
 import json
+import re
 from datetime import datetime
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
@@ -48,6 +49,62 @@ def _render_ai_analysis(ai_analysis: Any, channel: str) -> str:
         return renderer(ai_analysis)
     except ImportError:
         return ""
+
+
+def _build_feishu_card_elements(content: str) -> list[dict]:
+    """将飞书榜单内容拆分为多个 markdown 区块，提升卡片可读性"""
+    sanitized = sanitize_feishu_card_markdown(content)
+    if not sanitized:
+        return [{"tag": "markdown", "content": "暂无内容"}]
+
+    def _split_category_blocks(section: str) -> list[str]:
+        lines = section.splitlines()
+        category_indices = [
+            idx for idx, line in enumerate(lines)
+            if re.match(r"^\[\d+/\d+\]\s+\*\*.+?\*\*", line.strip())
+        ]
+        if not category_indices:
+            return [section.strip()]
+
+        blocks: list[str] = []
+        first_index = category_indices[0]
+        if first_index > 0:
+            intro = "\n".join(lines[:first_index]).strip()
+            if intro:
+                blocks.append(intro)
+
+        for idx, start in enumerate(category_indices):
+            end = category_indices[idx + 1] if idx + 1 < len(category_indices) else len(lines)
+            block = "\n".join(lines[start:end]).strip()
+            if block:
+                blocks.append(block)
+
+        return blocks
+
+    separator_pattern = r"\n(?:-{3,}|[━─—=\-]{3,})\n"
+    raw_sections = re.split(separator_pattern, sanitized)
+    sections = [section.strip() for section in raw_sections if section.strip()]
+
+    footer_lines: list[str] = []
+    if sections:
+        last_lines = sections[-1].splitlines()
+        while last_lines and (
+            last_lines[-1].startswith("TrendRadar ")
+            or last_lines[-1].startswith("更新时间：")
+        ):
+            footer_lines.insert(0, last_lines.pop())
+        sections[-1] = "\n".join(last_lines).strip()
+        sections = [section for section in sections if section]
+
+    elements: list[dict] = []
+    for section in sections:
+        for block in _split_category_blocks(section):
+            elements.append({"tag": "markdown", "content": block})
+
+    if footer_lines:
+        elements.append({"tag": "markdown", "content": "\n".join(footer_lines)})
+
+    return elements or [{"tag": "markdown", "content": sanitized}]
 
 
 # === SMTP 邮件配置 ===
@@ -166,6 +223,7 @@ def send_to_feishu(
     # 逐批发送
     for i, batch_content in enumerate(batches, 1):
         card_content = sanitize_feishu_card_markdown(batch_content)
+        card_elements = _build_feishu_card_elements(batch_content)
         content_size = len(card_content.encode("utf-8"))
         print(
             f"发送{log_prefix}第 {i}/{len(batches)} 批次，大小：{content_size} 字节 [{report_type}]"
@@ -186,12 +244,7 @@ def send_to_feishu(
                     },
                     "template": "blue",
                 },
-                "elements": [
-                    {
-                        "tag": "markdown",
-                        "content": card_content,
-                    }
-                ],
+                "elements": card_elements,
             },
         }
 
