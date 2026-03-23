@@ -412,7 +412,7 @@ custom:
                                    #   daily         → 强制全天汇总
                                    #   current       → 强制当前榜单
                                    #   incremental   → 强制增量模式
-    push: true                     # 是否发送推送通知
+    push: false                    # 默认静默，只在指定时段推送
     report_mode: "current"         # 报告模式:
                                    #   daily       → 当日所有新闻的汇总
                                    #   current     → 当前在榜的新闻
@@ -440,6 +440,7 @@ custom:
                                    # 时间段（period）中也可以设置此字段来覆盖
                                    # 例如晚间汇总用 AI 筛选：
                                    #   filter_method: "ai"
+    filter_method: "ai"
     once:
       analyze: true                # 该时间段内只分析一次（省 API）
       push: true                   # 该时间段内只推送一次（省打扰）
@@ -468,10 +469,10 @@ custom:
       # filter_method: "keyword"                # 筛选策略（可选: keyword | ai，不填用全局 filter.method）
       collect: true                # 夜间继续采集数据
       analyze: false               # 夜间不跑 AI 分析
-      push: true                   # 深夜也推送
+      push: false                  # 深夜只采集不推送，减少打扰
       once:
         analyze: true
-        push: false                # 深夜时段允许重复推送，便于立即验证效果
+        push: true
 
     weekday_morning:
       name: "工作日早间"
@@ -480,20 +481,24 @@ custom:
       # frequency_file: "xxx.txt"               # 关键词文件（可选，位于 config/custom/keyword/）
       # interests_file: "xxx.txt"                # AI 兴趣文件（可选，位于 config/custom/ai/）
       # filter_method: "keyword"                # 筛选策略（可选: keyword | ai，不填用全局 filter.method）
+      analyze: true                # 早上生成一轮 AI 速览
+      ai_mode: "current"           # 关注当前热点结构
       push: true                   # 早上推送一次
-      report_mode: "incremental"   # 只推新增内容
-      # once 继承 default（push: true）→ 窗口内只推一次
+      report_mode: "current"       # 原始内容不展示，但为 AI 分析提供当前榜单上下文
+      # once 继承 default（analyze: true, push: true）→ 窗口内只分析/推送一次
 
     weekend_morning:
       name: "周末早间"
-      start: "10:00"
-      end: "12:00"                 # 跨度 2h
+      start: "08:00"
+      end: "10:00"                 # 周末也保持同样的早间窗口
       # frequency_file: "xxx.txt"               # 关键词文件（可选，位于 config/custom/keyword/）
       # interests_file: "xxx.txt"                # AI 兴趣文件（可选，位于 config/custom/ai/）
       # filter_method: "keyword"                # 筛选策略（可选: keyword | ai，不填用全局 filter.method）
+      analyze: true                # 周末早上也生成 AI 速览
+      ai_mode: "current"           # 关注当前热点结构
       push: true
-      report_mode: "daily"         # 周末看全天汇总
-      # once 继承 default（push: true）→ 窗口内只推一次
+      report_mode: "current"       # 为 AI 提供当前榜单上下文
+      # once 继承 default（analyze: true, push: true）→ 窗口内只分析/推送一次
 
     evening_summary:
       name: "晚间汇总"
